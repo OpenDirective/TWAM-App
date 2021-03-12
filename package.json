@@ -13,13 +13,13 @@
   },
   "author": "Steve Lee <steve@opendirective.com>",
   "license": "proprietary",
-  "homepage": "https://deploy-preview-3--twam-gallant-swirles-d68516.netlify.app/",
+  "homepage": "https://604b3e3c0745f4a0541b6c7e--youthful-wing-da69cb.netlify.app/",
   "devDependencies": {
     "@11ty/eleventy": "^0.11.1",
     "dotenv": "^8.2.0"
   },
   "dependencies": {
-    "google-auth-library": "^6.1.4",
+    "google-auth-library": "^6.1.6",
     "google-spreadsheet": "^3.1.15",
     "lodash.template": "^4.5.0"
   }

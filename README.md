@@ -1,6 +1,6 @@
 # TWAM-App
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/02cf942d-4bcb-4216-b334-bc6f7ebd05fe/deploy-status)](https://app.netlify.com/sites/twam-app-prototype/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/84274074-22a7-412b-b77c-caef530c0a87/deploy-status)](https://app.netlify.com/sites/youthful-wing-da69cb/deploys)
 
 App for the Tools with A Mission charity ([TWAM](https://www.twam.uk/)) app.
 
