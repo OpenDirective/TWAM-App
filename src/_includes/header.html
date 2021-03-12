@@ -1,0 +1,225 @@
+<style>
+  .twam-app-header {
+    display: grid;
+    grid: 1fr / 4fr 1fr 1fr;
+    grid-gap: 1rem;
+    justify-content: space-between;
+    background: var(--twam-blue);
+    font-family: var(--font-family);
+    position: relative;
+    color: var(--white);
+    width: 100%;
+  }
+
+  .twam-app-header .logo-wrapper {
+    align-items: center;
+    display: flex;
+    height: 56px;
+    justify-content: flex-start;
+    padding: 0 1rem;
+    position: relative;
+  }
+
+  .twam-app-header .logo {
+    display: block;
+    height: auto;
+    position: relative;
+    transform: rotate(-3deg);
+    transition: transform 250ms ease-out;
+    width: 75px;
+    z-index: 15;
+    border: white 1px solid;
+  }
+
+  .twam-app-header .logo:active,
+  .twam-app-header .logo:focus,
+  .twam-app-header .logo:hover {
+    transform: rotate(0deg);
+  }
+
+  .twam-app-header .logo:active::after,
+  .twam-app-header .logo:focus::after,
+  .twam-app-header .logo:hover::after {
+    opacity: 1;
+  }
+
+  .twam-app-header .logo img {
+    display: block;
+    width: 100%;
+  }
+
+  .twam-app-header .title {
+    color: var(--white);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-left: 0.75rem;
+    position: relative;
+  }
+
+  .twam-app-header #name,
+  .twam-app-header button {
+    color: var(--white);
+    display: block;
+    font-family: var(--font-family);
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 0.4rem;
+    margin: 0.5rem;
+    text-align: center;
+  }
+
+  .twam-app-header #name .role {
+    font-size: small;
+  }
+
+  .twam-app-header button {
+    background: var(--twam-red);
+    border: var(--white) solid 2px;
+    border-radius: 40px;
+  }
+
+  .twam-app-header a.hidden,
+  .twam-app-header button.hidden,
+  .twam-app-header #name.hidden {
+    display: none;
+  }
+
+  .menu {
+    margin-left: 2rem;
+  }
+  .menu a {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  .menu a:link {
+    color: white;
+  }
+  .menu a:visited {
+    color: var(--blue);
+  }
+</style>
+
+<header class="twam-app-header">
+  <div class="logo-wrapper">
+    <a href="/" class="logo"
+      ><img src="/images/TWAM.png" alt="TWAM App Logo"
+    /></a>
+    <span class="title">TWAM App: Proof of concept:</span>
+    <span class="menu"
+      ><a href="/all">Public</a>&nbsp;
+      <a class="hidden" href="/applicant">Applicant</a>&nbsp;
+      <a class="hidden" href="/rdm">RDM</a></span
+    >
+  </div>
+
+  <button id="signup" class="hidden">Sign Up</button>
+  <button id="login" class="hidden">Log In</button>
+  <button id="logout" class="hidden">Log Out</button>
+  <a id="name" class="hidden" href="/user-info"> </a>
+</header>
+
+<script defer>
+  function renderUser() {
+    const applicantLink = document.querySelector('[href="/applicant"]')
+    const rdmLink = document.querySelector('[href="/rdm"]')
+    const signupButton = document.getElementById('signup')
+    const loginButton = document.getElementById('login')
+    const logoutButton = document.getElementById('logout')
+    signupButton.addEventListener('click', () => netlifyIdentity.open('signup'))
+    loginButton.addEventListener('click', () => netlifyIdentity.open('login'))
+    logoutButton.addEventListener('click', () => netlifyIdentity.logout())
+
+    function getRoles(user) {
+      const roles = user.app_metadata.roles
+      return roles && roles.length != 0 ? roles : ['']
+    }
+
+    function getRolesText(user) {
+      const roles = getRoles(user)
+      return roles[0] != '' ? roles.join(', ') : '[none]'
+    }
+
+    function getRolePage(user) {
+      const role = getRoles(user)[0]
+      return { '': '/', applicant: '/applicant', rdm: '/rdm' }[role]
+    }
+
+    function setImmediate(fn) {
+      setTimeout(fn, 0) // make sure happens on next scheduler loop
+    }
+
+    function gotoPage(page) {
+      if (page != window.location.pathname) {
+        setImmediate(() => {
+          window.location.href = page
+        })
+      }
+    }
+
+    function updateUserInfoUI(user, event) {
+      const nameDiv = document.getElementById('name')
+      if (user) {
+        const { full_name } = user.user_metadata
+        const role = user && getRoles(user)[0]
+        if (role == 'applicant') {
+          applicantLink.classList.remove('hidden')
+        } else if (role == 'rdm') {
+          rdmLink.classList.remove('hidden')
+        }
+        signupButton.classList.add('hidden')
+        loginButton.classList.add('hidden')
+        logoutButton.classList.remove('hidden')
+        nameDiv.innerHTML = `${full_name}` //TODO handle long names
+        nameDiv.classList.remove('hidden')
+      } else {
+        applicantLink.classList.add('hidden')
+        rdmLink.classList.add('hidden')
+        signupButton.classList.remove('hidden')
+        loginButton.classList.remove('hidden')
+        logoutButton.classList.add('hidden')
+        nameDiv.innerText = ''
+        nameDiv.classList.add('hidden')
+      }
+    }
+
+    function updateHomePageMsg(user) {
+      const msg = document.querySelector('#message')
+      if (!msg) {
+        return
+      }
+
+      const role = user && getRoles(user)[0]
+      const roleMsg =
+        role == 'applicant'
+          ? '<br/><br/>You can <a href="/applicant">apply for a TWAM toolkit.</a>'
+          : role == 'rdm'
+          ? '<br/><br/>You can <a href="/rdm">view your country\'s applications.</a>'
+          : ''
+
+      msg.innerHTML = user
+        ? `<h1>Welcome ${
+            user.user_metadata.full_name
+          }.<br/><br/>You have the role(s) "${getRolesText(
+            user,
+          )}".${roleMsg}</h1>`
+        : '<h1>Please log into your account.<br /><br />Sign Up first if you need an account.</h1>'
+    }
+
+    const handleUserState = ({ user, state }) => {
+      if (state == 'logout') {
+        gotoPage('/')
+      } else {
+        updateUserInfoUI(user, state)
+        if (window.location.pathname == '/') {
+          updateHomePageMsg(user)
+        }
+      }
+    }
+
+    addUserStateHandler(handleUserState)
+  }
+
+  renderUser()
+</script>
